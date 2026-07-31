@@ -23,14 +23,43 @@ the same architecture Macs Fan Control uses for its helper.
 
 ## Requirements
 
-macOS 14 or later, Apple Silicon or Intel. Building needs a Swift 5.9+
-toolchain — install the Xcode Command Line Tools if you don't have one:
+macOS 14 or later, Apple Silicon or Intel. Building from source needs a Swift
+5.9+ toolchain — install the Xcode Command Line Tools if you don't have one:
 
 ```sh
 xcode-select --install
 ```
 
 ## Install
+
+### Download a release
+
+Grab the latest zip from [Releases](https://github.com/jbforge/mac-fan-control/releases),
+unpack it, and run this from that folder:
+
+```sh
+./install.sh
+```
+
+It asks for your password. That is not incidental — writing fan speeds means
+talking to the SMC as root, so a small daemon (`fanctld`) is installed as a
+system LaunchDaemon. The installer also puts `FanControl.app` in `/Applications`
+and `fanctl` in `/usr/local/bin`. `./uninstall.sh` removes all of it.
+
+> [!IMPORTANT]
+> **These builds are not signed by an Apple developer account**, and macOS
+> quarantines anything downloaded from the internet. Double-click
+> `FanControl.app` in your Downloads folder and macOS will refuse to open it;
+> the command-line pieces get terminated outright on launch.
+>
+> `install.sh` clears that quarantine flag on the files it installs, which is
+> most of why it exists. Run it and you will not see the warning at all.
+>
+> If you already tried opening the app directly and got stuck, approve it under
+> System Settings → Privacy & Security → **Open Anyway** — or build from source
+> below, which never picks the flag up in the first place.
+
+### Build from source
 
 ```sh
 git clone https://github.com/jbforge/mac-fan-control.git
@@ -40,8 +69,9 @@ make install       # builds, installs + starts the daemon (asks for sudo),
 open /Applications/FanControl.app
 ```
 
-The app bundle is ad-hoc signed by the Makefile, so no Gatekeeper prompt —
-but it isn't notarized either. Build it yourself; that's the point.
+A bundle you built yourself never carries the download quarantine flag, so
+Gatekeeper stays out of the way. It isn't notarized either. Build it yourself;
+that's the point.
 
 To have the app start at login: System Settings → General → Login Items → add
 FanControl.
@@ -58,7 +88,8 @@ fanctl manual 3500 4200  # per-fan RPM (left, right)
 fanctl target 80       # keep temps below 80°C
 ```
 
-(Point at `.build/release/fanctl`, or copy it somewhere on your PATH.)
+(A release install puts `fanctl` on your PATH already. After a source build,
+point at `.build/release/fanctl` or copy it somewhere on your PATH yourself.)
 
 ## How the target-temp mode works
 

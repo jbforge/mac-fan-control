@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Build
+        run: swift build -c release
+
+      # The release path is only exercised on a tag, which is too late to find
+      # out it is broken. Build the archive on every change.
+      - name: Build the release archive
+        run: make dist VERSION=ci
+
+      - name: Check the archive contents
+        run: |
+          set -euo pipefail
+          dir="build/FanControl-ci"
+          for expected in \
+            "FanControl.app/Contents/MacOS/FanControlApp" \
+            "bin/fanctl" \
+            "bin/fanctld" \
+            "install.sh" \
+            "uninstall.sh" \
+            "scripts/install-daemon.sh" \
+            "scripts/uninstall-daemon.sh" \
+            "Resources/io.github.jbforge.fanctld.plist" \
+            "INSTALL.md" \
+            "LICENSE"; do
+            test -e "$dir/$expected" || { echo "missing $expected"; exit 1; }
+          done
+          for binary in \
+            "$dir/FanControl.app/Contents/MacOS/FanControlApp" \
+            "$dir/bin/fanctl" \
+            "$dir/bin/fanctld"; do
+            lipo -archs "$binary" | grep -q x86_64 || { echo "$binary: no x86_64"; exit 1; }
+            lipo -archs "$binary" | grep -q arm64 || { echo "$binary: no arm64"; exit 1; }
+          done
+          test -x "$dir/install.sh" || { echo "install.sh not executable"; exit 1; }
+
+      - name: Shell scripts parse
+        run: bash -n scripts/*.sh
