@@ -28,6 +28,7 @@ jobs:
           dir="build/FanControl-ci"
           for expected in \
             "FanControl.app/Contents/MacOS/FanControlApp" \
+            "FanControl.app/Contents/Resources/AppIcon.icns" \
             "bin/fanctl" \
             "bin/fanctld" \
             "install.sh" \

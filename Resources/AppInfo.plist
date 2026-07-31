@@ -6,6 +6,8 @@
 	<string>FanControl</string>
 	<key>CFBundleDisplayName</key>
 	<string>Fan Control</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>io.github.jbforge.fancontrol</string>
 	<key>CFBundleExecutable</key>
