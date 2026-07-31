@@ -41,6 +41,22 @@ xcode-select --install
 
 ## Install
 
+### Homebrew (easiest)
+
+```sh
+brew install jbforge/tap/mac-fan-control
+sudo brew services start mac-fan-control
+```
+
+No Gatekeeper warning by this route: Homebrew fetches with `curl`, which does
+not attach the download quarantine flag that makes macOS refuse to open
+unsigned software. The `sudo` is unavoidable — writing fan speeds means talking
+to the SMC as root.
+
+`brew info mac-fan-control` prints where the menu bar app landed and how to link
+it into `/Applications`. To remove it: `sudo brew services stop mac-fan-control`
+then `brew uninstall mac-fan-control`.
+
 ### Download a release
 
 Grab the latest zip from [Releases](https://github.com/jbforge/mac-fan-control/releases),
