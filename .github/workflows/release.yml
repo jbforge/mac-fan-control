@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  # So the whole path can be exercised without cutting a real tag.
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (no leading v), e.g. 1.0.4"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Building $version"
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Build universal archive
+        run: make dist VERSION=${{ steps.version.outputs.version }}
+
+      - name: Verify the archive is universal and signed
+        run: |
+          set -euo pipefail
+          dir="build/FanControl-${{ steps.version.outputs.version }}"
+          for binary in \
+            "$dir/FanControl.app/Contents/MacOS/FanControlApp" \
+            "$dir/bin/fanctl" \
+            "$dir/bin/fanctld"; do
+            # A release that silently drops an architecture, or ships a binary
+            # macOS will refuse to execute, should fail here and not on a user's
+            # machine.
+            arches="$(lipo -archs "$binary")"
+            echo "== $binary: $arches"
+            case "$arches" in
+              *x86_64*) ;;
+              *) echo "missing x86_64 slice"; exit 1 ;;
+            esac
+            case "$arches" in
+              *arm64*) ;;
+              *) echo "missing arm64 slice"; exit 1 ;;
+            esac
+            codesign --verify --verbose "$binary"
+          done
+          codesign --verify --deep --verbose "$dir/FanControl.app"
+
+      - name: Checksums
+        working-directory: build
+        run: |
+          shasum -a 256 "FanControl-${{ steps.version.outputs.version }}.zip" \
+            > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file .github/RELEASE_NOTES_TEMPLATE.md \
+            "build/FanControl-${{ steps.version.outputs.version }}.zip" \
+            "build/SHA256SUMS.txt"
+
+      - name: Upload archive as a workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: FanControl-${{ steps.version.outputs.version }}
+          path: |
+            build/FanControl-${{ steps.version.outputs.version }}.zip
+            build/SHA256SUMS.txt
