@@ -8,6 +8,15 @@ with the three modes you actually want:
 - **Target temp** — pick a temperature ceiling; fans ramp smoothly between their
   min and max to keep the machine below it, and idle again once it cools off.
 
+## Screenshots
+
+| Auto | Manual | Target temp |
+|:---:|:---:|:---:|
+| ![Fan Control menu in Auto mode, showing CPU and GPU temperatures and both fans badged "auto"](docs/screenshots/auto.png) | ![Fan Control menu in Manual mode, both fans pinned to a fixed RPM with per-fan sliders and badged "forced"](docs/screenshots/manual.png) | ![Fan Control menu in Target temp mode, holding an 80 °C ceiling with the fans at 75% of their range](docs/screenshots/target.png) |
+| macOS keeps control | Pin each fan to a fixed RPM | Hold a temperature ceiling |
+
+Readings shown are illustrative.
+
 ## Components
 
 | Component | What it is |
