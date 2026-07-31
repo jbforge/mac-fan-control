@@ -29,9 +29,10 @@ universal:
 # Assemble the menu bar app bundle from whatever is in BIN_DIR.
 bundle:
 	rm -rf $(APP_BUNDLE)
-	mkdir -p $(APP_BUNDLE)/Contents/MacOS
+	mkdir -p $(APP_BUNDLE)/Contents/MacOS $(APP_BUNDLE)/Contents/Resources
 	cp $(BIN_DIR)/FanControlApp $(APP_BUNDLE)/Contents/MacOS/FanControlApp
 	cp Resources/AppInfo.plist $(APP_BUNDLE)/Contents/Info.plist
+	cp Resources/AppIcon.icns $(APP_BUNDLE)/Contents/Resources/AppIcon.icns
 ifneq ($(VERSION),dev)
 	/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(VERSION)" \
 		$(APP_BUNDLE)/Contents/Info.plist
