@@ -19,7 +19,7 @@ jobs:
   release:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Resolve version
         id: version
@@ -82,7 +82,7 @@ jobs:
             "build/SHA256SUMS.txt"
 
       - name: Upload archive as a workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: FanControl-${{ steps.version.outputs.version }}
           path: |
